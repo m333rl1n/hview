@@ -1,0 +1,47 @@
+#! /bin/bash
+
+DEPENDENCIES=`command -v git curl js-beautify | wc -l`
+# Check if a URL is provided as an argument
+if [ $# -ne 1 ]; then
+  echo "Usage: $0 <URL>"
+  exit 1
+# Check dependencies
+elif [ $DEPENDENCIES -ne 3 ]; then
+    echo "Please install git, curl and js-beautify."
+    exit 1
+fi
+
+# Generate the URL for the Wayback Machine CDX API
+CDX_URL="https://web.archive.org/cdx/search/cdx?url=$1&output=json"
+
+# Make a request to the Wayback Machine CDX API and capture the RESPONSE
+RESPONSE=$(curl -s -m 15 "$CDX_URL")
+EMPTY="[]"
+
+# Check if the RESPONSE contains any SNAPSHOTS
+if [[ "$RESPONSE" != "$EMPTY" || "$RESPONSE"!="" ]]; then
+
+  # Extract the archive URLs from the RESPONSE
+  SNAPSHOTS=($(echo "$RESPONSE" | jq -r '.[] | select(.[4] == "200") | "\(.[1])/\(.[2])"' | sort ))
+
+  mkdir -p out;
+  cd out;
+  git init > /dev/null;
+
+  # Loop through the archive URLs and fetch each SNAPSHOT
+  for SNAPSHOT in "${SNAPSHOTS[@]}"; do
+    DATE=$(echo $SNAPSHOT | cut -d '/' -f 1 | sed 's/\(....\)\(..\)\(..\)\(..\)\(..\)\(..\)/\1-\2-\3-\4:\5:\6/')
+
+    FILENAME=$(basename "${SNAPSHOT/\?*/}"); # app.js
+
+    # Get content
+    curl -s -m 15 "https://web.archive.org/web/$SNAPSHOT"  | js-beautify > $FILENAME  2>/dev/null
+
+    # Commit changes
+    git add $FILENAME > /dev/null
+    git commit -m "$DATE" > /dev/null
+  done
+
+else
+  exit 1
+fi
