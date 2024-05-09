@@ -23,9 +23,10 @@ if [[ "$RESPONSE" != "$EMPTY" || "$RESPONSE"!="" ]]; then
 
   # Extract the archive URLs from the RESPONSE
   SNAPSHOTS=($(echo "$RESPONSE" | jq -r '.[] | select(.[2] == "200") | "\(.[0])/\(.[1]) \(.[3])"' | sort -k2 -u | cut -d ' ' -f1 | sort))
-
-  mkdir -p out;
-  cd out;
+  dir=out_`date +%s`;
+  mkdir -p $dir;
+  cd $dir;
+  echo "[ $dir ] Create directory... " > /dev/stderr;
   git init > /dev/null;
 
   # Loop through the archive URLs and fetch each SNAPSHOT
