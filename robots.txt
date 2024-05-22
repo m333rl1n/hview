@@ -1,6 +1,0 @@
-Sitemap: http: //jadi.ir/sitemap.xml
-    Sitemap: http: //jadi.ir/news-sitemap.xml
-
-    User - agent: *
-    Disallow: /wp-admin/
-Allow: /wp-admin/admin - ajax.php
