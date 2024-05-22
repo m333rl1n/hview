@@ -53,9 +53,9 @@ if [[ "$RESPONSE" != "$EMPTY" || "$RESPONSE"!="" ]]; then
     printf "\r[+] Downloading $COUNT/$LENGTH"
 
   done
-  
+
   printf "\r                                            "
-  printf "\r[+] Files saved in $DIR                     \n"
+  printf "\r[+] $count file(s) successfully saved at $DIR                     \n"
   exit 0
 
 else
